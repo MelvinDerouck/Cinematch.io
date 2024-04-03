@@ -8,7 +8,7 @@ By analyzing several variables such as synopsis, genres, ratings, CineMatch.io m
 
 The underlying algorithm uses content-based filtering, relying on a rich movie database extracted from www.tmdb.com through the API. </br> 
 
-![Texte alternatif](https://github.com/MelvinDerouck/Cinematch.io/blob/img/Search.png)
+![p](https://github.com/MelvinDerouck/Cinematch.io/blob/img/Search.png)
 
 ## Fonctionnality
 CineMatch.io is centered around a content-based filtering approach, with a particular focus on natural language processing (NLP) to provide a unique and accurate movie recommendation experience. </br>
