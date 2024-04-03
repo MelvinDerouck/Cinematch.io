@@ -38,19 +38,19 @@ CineMatch.io is designed to be intuitive and user-friendly. Here's how you can g
 
 5. **Refresh Your Search**: Want to explore more? Simply enter a new movie title in the search bar and discover a new set of recommendations.
 
-Enjoy exploring the world of movies with CineMatch.io!
+Enjoy exploring movies with CineMatch.io!
 
 ## Used technologies
 Below is a list of the key technologies used in the development of this application:
 
 - **Python**
-- **Streamlit**
 - **Pandas & NumPy**
 - **Natural Language Processing (NLP)**
 - **Scikit-learn**
+- **Streamlit**
 - **Git & GitHub**
 
-This technology stack was chosen to create an efficient, robust, and scalable solution for movie recommendations, ensuring a seamless experience for our users.
+This technology stack was chosen to create an efficient, robust, and scalable solution for movie recommendations, ensuring a seamless experience for users.
 
 ## How to contribute
 If you're looking to contribute to the project, here's how you can get started:
