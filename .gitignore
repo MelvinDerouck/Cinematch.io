@@ -25,3 +25,9 @@ CSV/
 # OS
 .DS_Store
 Thumbs.db
+
+*.npy
+*.pkl
+*.joblib
+cosine_sim.npy
+models/
