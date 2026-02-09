@@ -1,0 +1,27 @@
+# Fichiers d'environnement
+.env
+.env.local
+.env.*.local
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Données sensibles
+*.csv
+data/
+CSV/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
