@@ -21,8 +21,16 @@ import matplotlib.pyplot as plt
 
 import streamlit as st
 
-df = pd.read_csv(r"C:\Users\Melvin\Desktop\DATA\PORTFOLIO\Recommandation de films\CSV\df_movies_preprocess.csv")
-genre_df = pd.read_csv(r"C:\Users\Melvin\Desktop\DATA\PORTFOLIO\Recommandation de films\CSV\genres_binarized.csv")
+from src.config import DATA_DIR, BASE_POSTER_URL
+from src.recommender import get_recommendations
+
+# Charger les données
+df = pd.read_csv(DATA_DIR / "df_movies_preprocess.csv")
+genre_df = pd.read_csv(DATA_DIR / "genres_binarized.csv")
+
+# Utiliser BASE_POSTER_URL
+poster_url = BASE_POSTER_URL + row['Affiche']
+st.image(poster_url, width=200)
 
 liste_titres = df['Titre'].values
 
@@ -54,8 +62,6 @@ features_vectorized = hstack([titre_tfidf, synopsis_tfidf, note_scaled, age_scal
 
 cosine_sim = cosine_similarity(features_vectorized)
 
-
-BASE_POSTER_URL = "https://image.tmdb.org/t/p/w500"
 
 def get_recommendations(title, cosine_sim=cosine_sim):
     idx = df.index[df['Titre'] == title].tolist()[0]

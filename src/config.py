@@ -18,3 +18,6 @@ if not TMDB_API_TOKEN:
 # Chemins
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / 'data'
+NOTEBOOKS_DIR = BASE_DIR / 'notebooks'
+
+BASE_POSTER_URL = "https://image.tmdb.org/t/p/w500"
