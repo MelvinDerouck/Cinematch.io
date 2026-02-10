@@ -12,7 +12,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler
-from scipy.sparse import hstack
+from scipy.sparse import hstack, csr_matrix
+from sentence_transformers import SentenceTransformer
+from sklearn.preprocessing import MinMaxScaler, normalize
 
 import requests
 from PIL import Image
@@ -22,56 +24,87 @@ import matplotlib.pyplot as plt
 import streamlit as st
 
 from src.config import DATA_DIR, BASE_POSTER_URL
-from src.recommender import get_recommendations
 
 # Charger les données
 df = pd.read_csv(DATA_DIR / "df_movies_preprocess.csv")
 genre_df = pd.read_csv(DATA_DIR / "genres_binarized.csv")
 
-# Utiliser BASE_POSTER_URL
-poster_url = BASE_POSTER_URL + row['Affiche']
-st.image(poster_url, width=200)
-
 liste_titres = df['Titre'].values
 
 features = df[['Titre', 'Age du film', 'clean_synopsis_str', 'Note', 'Popularité'] + list(genre_df)]
 
-# preprocessor = ColumnTransformer(
-#     transformers=[
-#         ('Titre', TfidfVectorizer(), ['Titre']),
-#         ('clean_synopsis_str', TfidfVectorizer(), ['clean_synopsis_str']),
-#         ('Note', MinMaxScaler(), ['Note'])
-#     ],
-#     remainder='passthrough' 
-# )
+titre_tfidf = TfidfVectorizer(max_features=500).fit_transform(df['Titre'])
+titre_tfidf_weighted = titre_tfidf * 1.0
 
-titre_tfidf = TfidfVectorizer().fit_transform(df['Titre']) 
+embeddings_path = DATA_DIR / 'synopsis_embeddings.npy'
+if embeddings_path.exists():
+    synopsis_embeddings = np.load(embeddings_path)
+else:
+    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    synopsis_embeddings = model.encode(
+        df['clean_synopsis_str'].fillna('').tolist(),
+        show_progress_bar=True
+    )
+    np.save(embeddings_path, synopsis_embeddings)
+synopsis_embeddings_weighted = synopsis_embeddings * 3.0
 
-synopsis_tfidf = TfidfVectorizer().fit_transform(df['clean_synopsis_str']) * 1.3
+note_scaled = MinMaxScaler().fit_transform(df[['Note']]) * 1
+age_scaled = MinMaxScaler().fit_transform(df[['Age du film']]) * 0.75
+pop_scaled = MinMaxScaler().fit_transform(df[['Popularité']]) * 0.5
 
-note_scaled = MinMaxScaler().fit_transform(df[['Note']]) * 0.75
+genre_columns = list(genre_df.columns)
+genre_matrix = df[genre_columns].values * 1.5
 
-age_scaled = MinMaxScaler().fit_transform(df[['Age du film']]) * 0.5
-
-pop_scaled = MinMaxScaler().fit_transform(df[['Popularité']])
-
-genre_columns = ['Action', 'Animation', 'Aventure', 'Comédie', 'Crime', 'Documentaire', 'Drame', 'Familial', 'Fantastique', 'Guerre', 'Histoire', 'Horreur', 'Musique', 'Mystère', 'Romance', 'Science-Fiction', 'Thriller', 'Téléfilm', 'Western']
-genre_matrix = df[genre_columns].values
-
-features_vectorized = hstack([titre_tfidf, synopsis_tfidf, note_scaled, age_scaled, pop_scaled, genre_matrix])
+features_vectorized = np.hstack([
+    titre_tfidf_weighted.toarray(),
+    synopsis_embeddings_weighted,
+    note_scaled,
+    age_scaled,
+    pop_scaled,
+    genre_matrix
+])
+features_vectorized = normalize(features_vectorized, norm='l2')
 
 cosine_sim = cosine_similarity(features_vectorized)
 
-
-def get_recommendations(title, cosine_sim=cosine_sim):
-    idx = df.index[df['Titre'] == title].tolist()[0]
+@st.cache_data
+def get_recommendations(title, cosine_sim=cosine_sim, df=df, top_n=9):
+    """
+    Retourne les films les plus similaires à un film donné.
+    
+    Args:
+        title (str): Titre du film
+        cosine_sim (np.array): Matrice de similarité
+        df (pd.DataFrame): DataFrame contenant les films
+        top_n (int): Nombre de recommandations à retourner
+    
+    Returns:
+        pd.DataFrame: DataFrame avec les colonnes ['Titre', 'Affiche']
+    
+    Raises:
+        IndexError: Si le film n'est pas trouvé
+    """
+    # Trouve l'index du film
+    try:
+        idx = df.index[df['Titre'] == title].tolist()[0]
+    except IndexError:
+        raise IndexError(f"Film non trouvé: {title}")
+    
+    # Récupère les scores de similarité
     sim_scores = list(enumerate(cosine_sim[idx]))
+    
+    # Trie par score décroissant
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    sim_scores = sim_scores[1:10]  # 10 films en recommandations
+    
+    # Prend les top_n films (en excluant le film lui-même)
+    sim_scores = sim_scores[1:top_n+1]
+    
+    # Récupère les indices
     movie_indices = [i[0] for i in sim_scores]
-
-    # Retourne les titres des films recommandés et leurs chemins de poster
+    
+    # Retourne les recommandations
     recommendations = df[['Titre', 'Affiche']].iloc[movie_indices]
+    
     return recommendations
 
 
