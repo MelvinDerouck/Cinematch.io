@@ -1,5 +1,13 @@
 # Système de Recommandation de Films par Analyse de Contenu
 
+<p align="center">
+  <img src="img/gif_app.gif" alt="Démonstration de l'application CineMatch.io" width="800">
+</p>
+
+<p align="center">
+  <em>Interface de recommandation : sélection d'un film et affichage des résultats personnalisés</em>
+</p>
+
 ## Vue d'ensemble du projet
 
 Ce projet implémente un système de recommandation de films basé sur l'analyse de contenu (Content-Based Filtering). Le système combine plusieurs techniques de traitement du langage naturel et d'apprentissage automatique pour identifier les similarités entre films et proposer des recommandations pertinentes.
